@@ -1,0 +1,49 @@
+{
+  "name": "electron-application-template",
+  "version": "0.0.1",
+  "description": "Template",
+  "main": "index.js",
+  "scripts": {
+    "dist": "electron-builder",
+    "run": "electron index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOU-TIL/electron-application-template.git"
+  },
+  "author": "SeoRii <studioSeoRii@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YOU-TIL/electron-application-template/issues"
+  },
+  "build": {
+    "productName": "Template",
+    "appId": "youtil.template.electron",
+    "directories": {
+      "output": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "./res/logo.ico"
+    },
+    "portable": {
+      "artifactName": "template.exe"
+    }
+  },
+  "homepage": "https://github.com/YOU-TIL/electron-application-template#readme",
+  "dependencies": {
+    "request": "^2.88.2",
+    "electron-settings": "^4.0.2"
+  },
+  "devDependencies": {
+    "electron": "^9.1.0",
+    "electron-builder": "^22.7.0"
+  }
+}
