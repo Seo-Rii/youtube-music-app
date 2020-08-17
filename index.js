@@ -1,22 +1,45 @@
-const {app, ipcMain, session, Notification} = require('electron')
+const {app, ipcMain, session, Notification, BrowserWindow: eBrowserWindow, screen} = require('electron')
 const {BrowserWindow} = require('electron-acrylic-window')
 const fetch = require('node-fetch')
-const {ElectronBlocker, fullLists, Request} = require('@cliqz/adblocker-electron');
+const {ElectronBlocker, fullLists} = require('@cliqz/adblocker-electron');
+const url = require('url');
+const path = require('path');
 
-let win, awin;
+let win, awin, lwin, pwin;
+
+function backgroundPlayHandler() {
+    win.hide();
+    let notification = new Notification({
+        title: '유튜브 뮤직이 트레이로 최소화 되었습니다.',
+        body: '설정에서 백그라운드 재생을 켜거나 끌 수 있습니다.'/*,
+            icon: 'C:\\Program Files\\IP\\res\\ipLogo.ico'*/
+    });
+    notification.show();
+}
 
 ipcMain.on('close', () => {
     if (win) {
+        backgroundPlayHandler();
+    }
+});
+
+ipcMain.on('pip', () => {
+    if (win) {
         win.hide();
-        let notification = new Notification({
-            title: '유튜브 뮤직이 트레이로 최소화 되었습니다.',
-            body: '설정에서 백그라운드 재생을 켜거나 끌 수 있습니다.'/*,
-            icon: 'C:\\Program Files\\IP\\res\\ipLogo.ico'*/
-        });
-        notification.show();
-        setTimeout(() => {
-            win.show();
-        }, 5000);
+        win.webContents.executeJavaScript(`document.querySelector('video').requestPictureInPicture();`);
+    }
+})
+
+ipcMain.on('minimize', () => {
+    if (win) {
+        win.minimize();
+    }
+});
+
+ipcMain.on('toggleMaximize', () => {
+    if (win) {
+        if (win.isMaximized()) win.unmaximize();
+        else win.maximize();
     }
 });
 
@@ -39,12 +62,11 @@ function signinWindow(signinUrl) {
     awin.setMenu(null);
     awin.setResizable(false);
     //awin.webContents.openDevTools({mode: "detach"});
-    awin.loadURL(signinUrl, {
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
-    });
     awin.once('closed', () => {
         awin = null;
     });
+    awin.webContents.session.setUserAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/71.0');
+    awin.loadURL(signinUrl,);
     awin.webContents.on('did-finish-load', function () {
         awin.webContents.insertCSS(`
         html,body,#initialView,body>div>div { 
@@ -67,6 +89,41 @@ function signinWindow(signinUrl) {
         awin.webContents.executeJavaScript(``);
         awin.show();
     });
+
+    awin.webContents.on('did-finish-load', (e) => {
+        if (awin.webContents.getURL().includes('https://music.youtube.com/')) {
+            awin.close();
+            awin = null;
+            win.webContents.reload();
+        }
+    });
+}
+
+function showLoading() {
+    lwin = new eBrowserWindow({
+        width: 600,
+        height: 300
+        /*, icon: path.join(__dirname, 'logo.ico')*/,
+        frame: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false
+    });
+    lwin.setMenu(null);
+    lwin.webContents.session.setUserAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/71.0');
+    lwin.loadURL(url.format({
+        pathname: path.join(__dirname, 'splash.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+}
+
+function injectElement(win, selector, element) {
+    win.webContents.executeJavaScript(`
+        tNode=document.createElement('div');
+        tNode.innerHTML=\`${element}\`;
+        document.querySelector('${selector}').appendChild(tNode);
+    `);
 }
 
 async function createWindow() {
@@ -82,25 +139,29 @@ async function createWindow() {
         backgroundColor: '#00000000'
     });
     win.setMenu(null);
+    win.webContents.session.setUserAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/71.0');
     win.loadURL('https://music.youtube.com');
     win.webContents.openDevTools({mode: "detach"});
-    win.once('closed', () => {
-        win = null;
+    win.once('close', e => {
+        e.preventDefault();
+        backgroundPlayHandler();
+        return false;
     });
-
     const blocker = await ElectronBlocker.fromLists(fetch, fullLists, {
         enableCompression: true,
     });
 
     blocker.enableBlockingInSession(session.defaultSession);
 
-
-    win.webContents.on('did-finish-load', function () {
-        if (win.webContents.getURL().includes('https://accounts.google.com/')) {
-            signinWindow(win.webContents.getURL());
-            win.webContents.goBack();
+    win.webContents.on('will-navigate', (e, redirectUrl) => {
+        if (redirectUrl.includes('https://accounts.google.com/')) {
+            signinWindow(redirectUrl);
+            e.preventDefault();
             return;
         }
+    });
+
+    win.webContents.on('did-finish-load', () => {
         win.webContents.insertCSS(`
         html,body { 
             background-color: #00000000 !important;
@@ -117,8 +178,42 @@ async function createWindow() {
         }
         ytmusic-player-page {
             background: #00000000 !important;
+        }
+        *::selection {
+            background:#00000055;
+        }
+        #player-bar-background {
+            background:#00000099 !important;
+        }
+        ytmusic-player-bar {
+            background:#00000000 !important;
+        }
+        ytmusic-dialog {
+            background:#00000055 !important;
         }`)
-        win.webContents.executeJavaScript(`document.querySelector('ytmusic-nav-bar .right-content').innerHTML = document.querySelector('ytmusic-nav-bar .right-content').innerHTML + \`<paper-icon-button id="close-button" icon="yt-icons:close" class="style-scope ytmusic-nav-bar" title="닫기" aria-label="닫기" role="button" tabindex="1" aria-disabled="false" onclick="require('electron').ipcRenderer.send('close');"></paper-icon-button>\`;`);
+
+        const closeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:close" 
+            title="닫기" aria-label="닫기" role="button" tabindex="1" aria-disabled="false" 
+            onclick="require('electron').ipcRenderer.send('close');"></paper-icon-button>`;
+
+        const minimizeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:minimize" 
+            title="최소화" aria-label="최소화" role="button" tabindex="0" aria-disabled="false" 
+            style="margin:5px;" onclick="require('electron').ipcRenderer.send('minimize');"></paper-icon-button>`;
+
+        const maximizeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:fullscreen" 
+            title="최대화" aria-label="최대화" role="button" tabindex="0" aria-disabled="false" 
+            onclick="require('electron').ipcRenderer.send('toggleMaximize');"></paper-icon-button>`;
+
+        const pipButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:music_miniplayer" 
+            title="PIP 재생" aria-label="PIP 재생" role="button" tabindex="0" aria-disabled="false"
+            style="margin:5px;" onclick="require('electron').ipcRenderer.send('pip');"></paper-icon-button>`;
+
+        injectElement(win, 'ytmusic-nav-bar .right-content', '<div style="width:10px;"></div>')
+        injectElement(win, 'ytmusic-nav-bar .right-content', minimizeButton);
+        injectElement(win, 'ytmusic-nav-bar .right-content', maximizeButton);
+        injectElement(win, 'ytmusic-nav-bar .right-content', closeButton);
+        injectElement(win, 'ytmusic-player-bar .right-controls-buttons', pipButton);
+
         win.webContents.executeJavaScript(`setInterval(()=>{
             try {
                 if (window.pageYOffset !== 0) document.querySelector('ytmusic-header-renderer').style.background='#00000099';
@@ -126,12 +221,25 @@ async function createWindow() {
             } catch(e) {
             }
         }, 100);`);
-        win.show();
-        win.setVibrancy('dark');
+
+        win.webContents.executeJavaScript(`document.querySelector('.player-minimize-button').onclick=()=>{require('electron').ipcRenderer.send('pip');}`);
+        setTimeout(() => {
+            if (lwin) {
+                lwin.close();
+                lwin = null;
+            }
+            win.show();
+            win.setVibrancy('dark');
+        }, 100);
     });
 }
 
-app.on('ready', createWindow);
+function init() {
+    showLoading();
+    createWindow();
+}
+
+app.on('ready', init);
 
 
 app.on('window-all-closed', () => {
