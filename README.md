@@ -1,4 +1,5 @@
 ## youtube-music-app  
 
-![](./res/logo.png =250x)  
+<img src="./res/logo.png" width="200">  
+
 Electron application for Youtube Music
