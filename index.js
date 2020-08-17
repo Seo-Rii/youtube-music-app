@@ -141,7 +141,7 @@ async function createWindow() {
     win.setMenu(null);
     win.webContents.session.setUserAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/71.0');
     win.loadURL('https://music.youtube.com');
-    win.webContents.openDevTools({mode: "detach"});
+    //win.webContents.openDevTools({mode: "detach"});
     win.once('close', e => {
         e.preventDefault();
         backgroundPlayHandler();
