@@ -1,20 +1,25 @@
-const {app, ipcMain, session, Notification, BrowserWindow: eBrowserWindow, screen} = require('electron')
+const {app, ipcMain, session, Notification, BrowserWindow: eBrowserWindow, Tray, nativeImage, Menu} = require('electron')
 const {BrowserWindow} = require('electron-acrylic-window')
 const fetch = require('node-fetch')
 const {ElectronBlocker, fullLists} = require('@cliqz/adblocker-electron');
 const url = require('url');
 const path = require('path');
+const setting = require('electron-settings')
 
-let win, awin, lwin, pwin;
+let win, awin, lwin, pwin, tray;
 
 function backgroundPlayHandler() {
     win.hide();
-    let notification = new Notification({
-        title: '유튜브 뮤직이 트레이로 최소화 되었습니다.',
-        body: '설정에서 백그라운드 재생을 켜거나 끌 수 있습니다.'/*,
+    let isBackgroundPlayKnown = setting.getSync('isBackgroundPlayKnown');
+    if (!isBackgroundPlayKnown) {
+        let notification = new Notification({
+            title: '유튜브 뮤직이 트레이로 최소화 되었습니다.',
+            body: '설정에서 백그라운드 재생을 켜거나 끌 수 있습니다.'/*,
             icon: 'C:\\Program Files\\IP\\res\\ipLogo.ico'*/
-    });
-    notification.show();
+        });
+        notification.show();
+    }
+    setting.setSync('isBackgroundPlayKnown', true);
 }
 
 ipcMain.on('close', () => {
@@ -257,9 +262,39 @@ async function createWindow() {
     });
 }
 
+function setTrayContext(musicName, isPlaying) {
+    let menuItem = [{
+        label: 'Youtube Music', click: () => {
+            win.show();
+            win.focus();
+        }
+    }];
+    if (musicName) menuItem.push({label: musicName, enabled: false});
+    menuItem.push({label: '종료', click: app.exit})
+    let contextMenu = Menu.buildFromTemplate(menuItem);
+    tray.setContextMenu(contextMenu);
+}
+
+function createTray() {
+    const iconPath = path.join(__dirname, 'res/logo.png');
+    tray = new Tray(nativeImage.createFromPath(iconPath));
+    tray.on('click', () => {
+        win.show();
+        win.focus();
+    });
+    tray.setToolTip('Youtube Music');
+    tray = new Tray(nativeImage.createFromPath(iconPath));
+    tray.on('click', () => {
+        win.show();
+        win.focus();
+    });
+    setTrayContext('', false);
+}
+
 function init() {
     showLoading();
     createWindow();
+    createTray();
 }
 
 app.on('ready', init);
