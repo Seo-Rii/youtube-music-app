@@ -33,7 +33,7 @@
       ],
       "icon": "./res/logo.ico"
     },
-    "portable": {
+    "NSIS": {
       "artifactName": "YTMusic.exe"
     }
   },
