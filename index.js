@@ -23,6 +23,13 @@ ipcMain.on('close', () => {
     }
 });
 
+ipcMain.on('closeLoginWindow', () => {
+    if (awin) {
+        awin.close();
+        awin = null;
+    }
+});
+
 ipcMain.on('pip', () => {
     if (win) {
         win.hide();
@@ -50,6 +57,14 @@ function getFramePath(resName) {
     return `file://${__dirname}/frame.html?locale=${locale}&resName=${resName}.html`;
 }
 
+function injectElement(win, selector, element) {
+    win.webContents.executeJavaScript(`
+        tNode=document.createElement('div');
+        tNode.innerHTML=\`${element}\`;
+        document.querySelector('${selector}').appendChild(tNode);
+    `);
+}
+
 function signinWindow(signinUrl) {
     awin = new BrowserWindow({
         width: 400,
@@ -57,7 +72,11 @@ function signinWindow(signinUrl) {
         icon: path.join(__dirname, 'res/logo.ico'),
         frame: false,
         backgroundColor: '#00000000',
-        alwaysOnTop: true
+        alwaysOnTop: true,
+        webPreferences: {
+            nodeIntegration: true,
+            webSecurity: false
+        }
     });
     awin.setMenu(null);
     awin.setResizable(false);
@@ -66,30 +85,42 @@ function signinWindow(signinUrl) {
         awin = null;
     });
     awin.webContents.session.setUserAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/71.0');
-    awin.loadURL(signinUrl,);
+    awin.loadURL(signinUrl);
     awin.webContents.on('did-finish-load', function () {
         awin.webContents.insertCSS(`
-        html,body,#initialView,body>div>div { 
-            background-color: #00000000 !important;
-        }
-        * {
-            color:white;
-        }
-        input{
-            color:white !important;
-        }
-        ytmusic-nav-bar{
-            -webkit-app-region: drag;
-            background:#00000000;
-        }
-        input ~ div{
-            background:#00000000 !important;
-        }`)
+                html,body,#initialView,body>div>div { 
+                    background-color: #00000000 !important;
+                }
+                * {
+                    color:white;
+                }
+                input{
+                    color:white !important;
+                }
+                input ~ div{
+                    background:#00000000 !important;
+                }
+                body>div:nth-child( 5 ) {
+                    display: none;
+                }
+                html {
+                    -webkit-app-region: drag;
+                }
+                #view_container, #auth-close-button, .yt-dialog, .yt-dialog * {
+                    -webkit-app-region: no-drag;
+                }
+            `)
         awin.setVibrancy('dark')
-        awin.webContents.executeJavaScript(``);
+        const closeButton = `
+            <a style='font-family: "Segoe MDL2 Assets";position:fixed;right: 10px;top:10px;padding:10px;font-size: 20px;color:white;z-index: 50000;' 
+                id="auth-close-button">&#xE8BB;</a>`
+        injectElement(awin, 'body', closeButton);
+        awin.webContents.executeJavaScript(`
+            document.getElementById('auth-close-button').addEventListener('click', ()=>{
+                require('electron').ipcRenderer.send('closeLoginWindow');
+            });`)
         awin.show();
     });
-
     awin.webContents.on('did-finish-load', (e) => {
         if (awin.webContents.getURL().includes('https://music.youtube.com/')) {
             awin.close();
@@ -116,14 +147,6 @@ function showLoading() {
         protocol: 'file:',
         slashes: true
     }));
-}
-
-function injectElement(win, selector, element) {
-    win.webContents.executeJavaScript(`
-        tNode=document.createElement('div');
-        tNode.innerHTML=\`${element}\`;
-        document.querySelector('${selector}').appendChild(tNode);
-    `);
 }
 
 async function createWindow() {
@@ -253,3 +276,11 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+    app.quit();
+}
+
+app.on('second-instance', createWindow);
