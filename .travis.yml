@@ -25,5 +25,5 @@ script:
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file: build/Webtoon_Downloader.exe
+  file: build/YTMusic.exe
   skip_cleanup: true

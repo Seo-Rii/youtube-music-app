@@ -53,8 +53,8 @@ function getFramePath(resName) {
 function signinWindow(signinUrl) {
     awin = new BrowserWindow({
         width: 400,
-        height: 600
-        /*, icon: path.join(__dirname, 'logo.ico')*/,
+        height: 600,
+        icon: path.join(__dirname, 'res/logo.ico'),
         frame: false,
         backgroundColor: '#00000000',
         alwaysOnTop: true
@@ -102,8 +102,8 @@ function signinWindow(signinUrl) {
 function showLoading() {
     lwin = new eBrowserWindow({
         width: 600,
-        height: 300
-        /*, icon: path.join(__dirname, 'logo.ico')*/,
+        height: 300,
+        icon: path.join(__dirname, 'res/logo.ico'),
         frame: false,
         alwaysOnTop: true,
         skipTaskbar: true,
@@ -134,7 +134,7 @@ async function createWindow() {
             nodeIntegration: true,
             webSecurity: false,
             zoomFactor: 0.8
-        }/*, icon: path.join(__dirname, 'logo.ico')*/,
+        }, icon: path.join(__dirname, 'res/logo.ico'),
         frame: false,
         backgroundColor: '#00000000'
     });

@@ -1,5 +1,5 @@
 {
-  "name": "electron-application-template",
+  "name": "youtube-music",
   "version": "0.0.1",
   "description": "Template",
   "main": "index.js",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOU-TIL/electron-application-template.git"
+    "url": "git+https://github.com/Seo-Rii/youtube-music-app.git"
   },
   "author": "SeoRii <studioSeoRii@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YOU-TIL/electron-application-template/issues"
+    "url": "https://github.com/Seo-Rii/youtube-music-app/issues"
   },
   "build": {
-    "productName": "Template",
-    "appId": "youtil.template.electron",
+    "productName": "Youtube Music",
+    "appId": "seorii.youtube.music",
     "directories": {
       "output": "build"
     },
@@ -34,10 +34,10 @@
       "icon": "./res/logo.ico"
     },
     "portable": {
-      "artifactName": "template.exe"
+      "artifactName": "YTMusic.exe"
     }
   },
-  "homepage": "https://github.com/YOU-TIL/electron-application-template#readme",
+  "homepage": "https://github.com/Seo-Rii/youtube-music-app#readme",
   "dependencies": {
     "request": "^2.88.2",
     "electron-settings": "^4.0.2",
