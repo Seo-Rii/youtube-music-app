@@ -350,6 +350,7 @@ function init() {
     showLoading();
     createWindow();
     createTray();
+    autoUpdater.checkForUpdates();
 }
 
 app.on('ready', init);

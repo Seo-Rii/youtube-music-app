@@ -39,7 +39,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "SeoRii",
+        "owner": "Seo-Rii",
         "repo": "youtube-music-app"
       }
     ]
