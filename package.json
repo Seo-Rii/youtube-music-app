@@ -51,7 +51,8 @@
     "electron-acrylic-window": "^0.3.2",
     "@cliqz/adblocker-electron": "^1.17.0",
     "node-fetch": "^2.6.0",
-    "electron-updater": "^4.3.4"
+    "electron-updater": "^4.3.4",
+    "electron-is-dev": "^1.2.0"
   },
   "devDependencies": {
     "electron": "^9.2.0",
