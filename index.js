@@ -273,7 +273,7 @@ async function createWindow() {
         `)
 
         const closeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:close" 
-            title="닫기" aria-label="닫기" role="button" tabindex="1" aria-disabled="false" style="margin-right:-5px;"
+            title="닫기" aria-label="닫기" role="button" tabindex="1" aria-disabled="false"
             onclick="require('electron').ipcRenderer.send('close');"></paper-icon-button>`;
 
         const minimizeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:minimize" 

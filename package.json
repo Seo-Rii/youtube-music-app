@@ -39,8 +39,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "you-til",
-        "repo": "viewIt"
+        "owner": "SeoRii",
+        "repo": "youtube-music-app"
       }
     ]
   },
