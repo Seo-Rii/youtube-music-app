@@ -38,7 +38,29 @@ ipcMain.on('closeLoginWindow', () => {
 ipcMain.on('pip', () => {
     if (win) {
         win.hide();
+        win.webContents.executeJavaScript(`document.querySelector('video').addEventListener("leavepictureinpicture", (e) => {
+            let wasMuted=document.querySelector('video').muted, wasPaused=document.querySelector('video').paused;
+            if (wasPaused) {
+                document.querySelector('video').muted = true;;
+                document.querySelector('video').play();
+            }
+            require('electron').ipcRenderer.send('exitPIP', wasPaused, wasMuted);
+            e.preventDefault=false;
+        }, { once: true });`);
         win.webContents.executeJavaScript(`document.querySelector('video').requestPictureInPicture();`);
+    }
+})
+
+ipcMain.on('exitPIP', (e, wasPaused, wasMuted) => {
+    if (win) {
+        setTimeout(() => {
+            win.webContents.executeJavaScript(`document.querySelector('video').paused`).then((nowPaused) => {
+                if (nowPaused && !wasPaused) win.webContents.executeJavaScript(`document.querySelector('video').play()`);
+                else win.show();
+                if (wasPaused) win.webContents.executeJavaScript(`document.querySelector('video').pause()`);
+                win.webContents.executeJavaScript(`document.querySelector('video').muted = ` + wasMuted.toString());
+            })
+        }, 200);
     }
 })
 
@@ -194,6 +216,16 @@ async function createWindow() {
         html,body { 
             background-color: #00000000 !important;
         }
+        html {
+            overflow-y: overlay !important;
+            --ytmusic-scrollbar-width: 0px !important;
+        }
+        #nav-bar-background {
+            width: 100vw !important;
+        }
+        #nav-bar-shadow {
+            width: 100vw !important;
+        }
         ytmusic-nav-bar {
             -webkit-app-region: drag;
             background: #00000000;
@@ -218,10 +250,24 @@ async function createWindow() {
         }
         ytmusic-dialog {
             background:#00000055 !important;
-        }`)
+        }
+        *::-webkit-scrollbar-track
+        {
+            background-color: #00000000;
+        }
+        *::-webkit-scrollbar
+        {
+            width: 10px;
+            background-color: #00000000;
+        }
+        *::-webkit-scrollbar-thumb
+        {
+            background-color: #444444;
+        }
+        `)
 
         const closeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:close" 
-            title="닫기" aria-label="닫기" role="button" tabindex="1" aria-disabled="false" 
+            title="닫기" aria-label="닫기" role="button" tabindex="1" aria-disabled="false" style="margin-right:-5px;"
             onclick="require('electron').ipcRenderer.send('close');"></paper-icon-button>`;
 
         const minimizeButton = `<paper-icon-button class="style-scope ytmusic-player" icon="yt-icons:minimize" 
@@ -247,10 +293,13 @@ async function createWindow() {
                 if (window.pageYOffset !== 0) document.querySelector('ytmusic-header-renderer').style.background='#00000099';
                 else document.querySelector('ytmusic-header-renderer').style.background='';
             } catch(e) {
+            
             }
-        }, 100);`);
+        }, 50);`);
 
         win.webContents.executeJavaScript(`document.querySelector('.player-minimize-button').onclick=()=>{require('electron').ipcRenderer.send('pip');}`);
+
+
         setTimeout(() => {
             if (lwin) {
                 lwin.close();
