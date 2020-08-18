@@ -4,7 +4,7 @@
   "description": "Template",
   "main": "index.js",
   "scripts": {
-    "dist": "electron-builder",
+    "dist": "electron-builder build -p always",
     "run": "electron index.js"
   },
   "repository": {
@@ -35,7 +35,14 @@
     },
     "nsis": {
       "artifactName": "YTMusic.exe"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "you-til",
+        "repo": "viewIt"
+      }
+    ]
   },
   "homepage": "https://github.com/Seo-Rii/youtube-music-app#readme",
   "dependencies": {
@@ -43,7 +50,8 @@
     "electron-settings": "^4.0.2",
     "electron-acrylic-window": "^0.3.2",
     "@cliqz/adblocker-electron": "^1.17.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "electron-updater": "^4.3.4"
   },
   "devDependencies": {
     "electron": "^9.2.0",

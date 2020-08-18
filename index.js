@@ -5,19 +5,25 @@ const {ElectronBlocker, fullLists} = require('@cliqz/adblocker-electron');
 const url = require('url');
 const path = require('path');
 const setting = require('electron-settings')
+const {autoUpdater} = require("electron-updater");
 
 let win, awin, lwin, pwin, tray;
+
+function createNewNotification(title, body) {
+    let notification = new Notification({
+        title: title,
+        body: body,
+        icon: path.join(__dirname, 'res/logo.ico')
+    });
+    notification.show();
+    return notification;
+}
 
 function backgroundPlayHandler() {
     win.hide();
     let isBackgroundPlayKnown = setting.getSync('isBackgroundPlayKnown');
     if (!isBackgroundPlayKnown) {
-        let notification = new Notification({
-            title: '유튜브 뮤직이 트레이로 최소화 되었습니다.',
-            body: '설정에서 백그라운드 재생을 켜거나 끌 수 있습니다.'/*,
-            icon: 'C:\\Program Files\\IP\\res\\ipLogo.ico'*/
-        });
-        notification.show();
+        createNewNotification('유튜브 뮤직이 트레이로 최소화 되었습니다.', '설정에서 백그라운드 재생을 켜거나 끌 수 있습니다.')
     }
     setting.setSync('isBackgroundPlayKnown', true);
 }
@@ -368,3 +374,11 @@ if (!gotTheLock) {
 }
 
 app.on('second-instance', createWindow);
+
+autoUpdater.on('update-available', (info) => {
+    createNewNotification('업데이트 다운로드 중...', '새 버전을 자동으로 다운받고 설치하고 있습니다.')
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+    createNewNotification('업데이트 설치 성공!','앱을 다시 시작하면 업데이트가 적용됩니다.');
+});

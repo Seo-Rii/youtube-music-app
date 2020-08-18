@@ -21,9 +21,3 @@ cache:
 
 script:
   - npm run-script dist
-
-deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
-  file: build/YTMusic.exe
-  skip_cleanup: true
