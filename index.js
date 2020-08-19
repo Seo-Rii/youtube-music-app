@@ -241,7 +241,7 @@ async function createMainWindow() {
 
     if (isDev) mainWindow.webContents.openDevTools({mode: "detach"});
 
-    mainWindow.once('close', e => {
+    mainWindow.on('close', e => {
         e.preventDefault();
         backgroundHandler();
         return false;
@@ -297,21 +297,18 @@ async function createMainWindow() {
             ytmusic-player-bar {
                 background:#00000000 !important;
             }
-            ytmusic-dialog {
-                background:#00000055 !important;
-            }
-            *::-webkit-scrollbar-track
-            {
+            *::-webkit-scrollbar-track {
                 background-color: #00000000;
             }
-            *::-webkit-scrollbar
-            {
+            *::-webkit-scrollbar {
                 width: 10px;
                 background-color: #00000000;
             }
-            *::-webkit-scrollbar-thumb
-            {
+            *::-webkit-scrollbar-thumb {
                 background-color: #444444;
+            }
+            #player-bar-background {
+                width: 100 vw;
             }
         `)
 
