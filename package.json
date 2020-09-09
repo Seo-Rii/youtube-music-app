@@ -1,6 +1,6 @@
 {
   "name": "youtube-music",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Template",
   "main": "index.js",
   "scripts": {
@@ -55,7 +55,7 @@
     "electron-is-dev": "^1.2.0"
   },
   "devDependencies": {
-    "electron": "^9.2.0",
+    "electron": "^9.2.1",
     "electron-builder": "^22.7.0"
   }
 }

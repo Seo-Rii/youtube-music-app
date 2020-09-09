@@ -404,13 +404,14 @@ function createMainTray() {
 //
 
 function init() {
+    app.setAppUserModelId("seorii.youtube.music");
+    autoUpdater.checkForUpdates();
+    setInterval(() => {
+        autoUpdater.checkForUpdates();
+    }, 600000);
     createSplashWindow();
     createMainWindow();
     createMainTray();
-    if (process.platform === 'win32') {
-        app.setAppUserModelId("seorii.youtube.music");
-    }
-    autoUpdater.checkForUpdates();
 }
 
 //
@@ -439,7 +440,3 @@ autoUpdater.on('update-available', () => {
 autoUpdater.on('update-downloaded', () => {
     createNewNotification('업데이트 설치 성공!', '앱을 다시 시작하면 업데이트가 적용됩니다.');
 });
-
-setInterval(() => {
-    autoUpdater.checkForUpdates();
-}, 600000);
